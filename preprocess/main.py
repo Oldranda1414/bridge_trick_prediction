@@ -1,35 +1,123 @@
 import csv
 import re
 import sys
-from typing import Any
 
 # Pattern to find tags of interest
 tag_pattern = re.compile(r'(qx\|[^|]+\||md\|[^|]+\||mb\|[^|]+\||pc\|[^|]+\||mc\|[^|]+\|)')
 
-def parse_bridge_file(input_path, output_path) -> None:
+# Card value mapping
+CARD_VALUES = {
+    '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, 
+    'T': 10, 'J': 11, 'Q': 12, 'K': 13, 'A': 14
+}
+
+def get_trump_from_bidding(bidding_sequence):
+    """Extract trump suit from bidding sequence"""
+    if not bidding_sequence:
+        return None
+    
+    # Look for the last contract bid (number followed by suit)
+    for bid in reversed(bidding_sequence):
+        if len(bid) >= 2 and bid[0].isdigit() and bid[1] in 'CDHSN':
+            suit_char = bid[1]
+            suit_map = {'C': 'C', 'D': 'D', 'H': 'H', 'S': 'S', 'N': 'NT'}
+            return suit_map.get(suit_char)
+    
+    return None
+
+def calculate_tricks_won_by_declarer(play_sequence, trump_suit, first_player_index):
+    """
+    Calculate how many tricks were won by declarer's side
+    first_player_index: 0=N, 1=E, 2=S, 3=W (the player who led the first card)
+    Returns: tricks won by declarer's side
+    """
+    if not play_sequence:
+        return None
+    
+    # The first player to play is from the defending side (didn't win bidding)
+    # So if first player is N/S, declarer is E/W, and vice versa
+    declarer_side = 'EW' if first_player_index in [0, 2] else 'NS'
+    
+    tricks_won_by_declarer = 0
+    current_trick = []
+    current_leader = first_player_index
+    
+    for card in play_sequence:
+        current_trick.append((card, current_leader))
+        current_leader = (current_leader + 1) % 4  # Move to next player
+        
+        # When we have 4 cards, the trick is complete
+        if len(current_trick) == 4:
+            # Determine winner of this trick
+            winning_card, winning_player = determine_trick_winner(current_trick, trump_suit)
+            
+            # Check if winner is on declarer's side
+            if (declarer_side == 'NS' and winning_player in [0, 2]) or \
+               (declarer_side == 'EW' and winning_player in [1, 3]):
+                tricks_won_by_declarer += 1
+            
+            # Winner leads next trick
+            current_leader = winning_player
+            current_trick = []
+    
+    return tricks_won_by_declarer
+
+def determine_trick_winner(trick_cards, trump_suit):
+    """Determine who wins a trick given the cards played and trump suit"""
+    led_suit = trick_cards[0][0][0].upper()  # Suit of first card
+    
+    winning_card, winning_player = trick_cards[0]
+    winning_value = get_card_value(winning_card, led_suit, trump_suit)
+    
+    for card, player in trick_cards[1:]:
+        card_value = get_card_value(card, led_suit, trump_suit)
+        if card_value > winning_value:
+            winning_card, winning_player, winning_value = card, player, card_value
+    
+    return winning_card, winning_player
+
+def get_card_value(card, led_suit, trump_suit):
+    """Get numeric value of card considering trump and led suit"""
+    suit = card[0].upper()
+    rank = card[1]
+    
+    base_value = CARD_VALUES.get(rank, 0)
+    
+    # Trump cards are highest
+    if trump_suit and suit == trump_suit:
+        return 100 + base_value  # Trump cards valued 100+
+    # Cards of led suit are next
+    elif suit == led_suit:
+        return base_value
+    # Off-suit cards are lowest
+    else:
+        return 0
+
+def parse_bridge_file(input_path, output_path):
     boards = []
-    current_board: dict[str,Any] = {}
-    current_play_sequence: list[str] = []
+    current_board = {}
+    current_play_sequence = []
+    current_bidding = []
     in_board = False
 
-    def calculate_tricks_from_play(play_sequence, trump):
-        """Calculate number of tricks from play sequence (4 cards per trick)"""
-        if not play_sequence:
-            return None
-        # Each trick consists of 4 cards
-        print(play_sequence)
-        total_cards_played = len(play_sequence)
-        tricks_completed = total_cards_played // 4
-        return tricks_completed
-
     def flush_board():
-        nonlocal in_board, current_play_sequence
+        nonlocal in_board, current_play_sequence, current_bidding
         if current_board and current_board.get("hands"):
             # Calculate tricks if not provided
             if current_board.get("tricks") is None and current_play_sequence:
-                calculated_tricks = calculate_tricks_from_play(current_play_sequence)
-                if calculated_tricks is not None:
-                    current_board['tricks'] = calculated_tricks
+                # Determine trump from bidding
+                trump_suit = get_trump_from_bidding(current_bidding)
+                
+                # Determine first player (who led the first card)
+                first_card = current_play_sequence[0] if current_play_sequence else None
+                first_player_index = determine_first_player(first_card, current_board["hands"])
+                
+                if first_player_index is not None:
+                    calculated_tricks = calculate_tricks_won_by_declarer(
+                        current_play_sequence, trump_suit, first_player_index
+                    )
+                    if calculated_tricks is not None:
+                        current_board['tricks'] = calculated_tricks
             
             # Only add board if we have at least hands and either tricks or first_card
             if current_board.get("tricks") is not None or current_board.get("first_card"):
@@ -37,7 +125,34 @@ def parse_bridge_file(input_path, output_path) -> None:
         
         current_board.clear()
         current_play_sequence = []
+        current_bidding = []
         in_board = False
+
+    def determine_first_player(first_card, hands):
+        """Determine which player (0=N, 1=E, 2=S, 3=W) played the first card"""
+        if not first_card or not hands:
+            return None
+        
+        # Check which hand contains the first card
+        for i, hand in enumerate(hands):
+            if hand_contains_card(hand, first_card):
+                return i
+        return None
+
+    def hand_contains_card(hand, card):
+        """Check if a hand contains the specified card"""
+        # Hand format: "SJT754H87DAQT3CAK" - suits in S,H,D,C order
+        suit = card[0].upper()
+        rank = card[1]
+        
+        # Find the suit section in the hand
+        suit_pattern = re.compile(r'([SHDC])([2-9AKQJT]+)')
+        matches = suit_pattern.findall(hand)
+        
+        for hand_suit, ranks in matches:
+            if hand_suit == suit and rank in ranks:
+                return True
+        return False
 
     with open(input_path, 'r', encoding='utf-8') as f:
         for line in f:
@@ -58,11 +173,15 @@ def parse_bridge_file(input_path, output_path) -> None:
                     }
                     in_board = True
                     current_play_sequence = []
+                    current_bidding = []
 
                 elif tag == 'md' and in_board:
                     hands = data.split(',')
                     if len(hands) == 4:
                         current_board['hands'] = hands
+
+                elif tag == 'mb' and in_board:
+                    current_bidding.append(data.strip())
 
                 elif tag == 'pc' and in_board:
                     card = data.strip()
