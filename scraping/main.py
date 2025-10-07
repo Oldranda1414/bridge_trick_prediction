@@ -1,7 +1,10 @@
 import requests
 from bs4 import BeautifulSoup
+import time
 
-def get_vugraph_download_links(search_string="2023-03"):
+SLEEP_TIME = 5
+
+def get_vugraph_ids(search_string="2023-03") -> set[int]:
     """
     Scrape download links from BridgeBase vugraph archives
     
@@ -51,7 +54,7 @@ def get_vugraph_download_links(search_string="2023-03"):
         soup = BeautifulSoup(response.content, 'html.parser')
         
         # Find all download links with the specific pattern
-        download_links = []
+        download_links: set = set()
         
         # Look for <a> tags with href containing "vugraph_linfetch.php?id="
         download_anchors = soup.find_all('a', href=lambda x: x and 'vugraph_linfetch.php?id=' in x)
@@ -62,89 +65,134 @@ def get_vugraph_download_links(search_string="2023-03"):
             id_start = href.find('id=') + 3
             file_id = href[id_start:]
             
-            # Create the full download URL
-            full_url = f"https://www.bridgebase.com/tools/vugraph_linfetch.php?id={file_id}"
-            
-            # Get the link text for context (usually "Download" or similar)
-            link_text = anchor.get_text(strip=True)
-            
-            download_links.append({
-                'id': file_id,
-                'url': full_url,
-                'text': link_text,
-                'href': href
-            })
+            download_links.add(int(file_id))
         
         return download_links
         
     except requests.RequestException as e:
         print(f"Error making request: {e}")
-        return []
+        return set()
     except Exception as e:
         print(f"Error parsing response: {e}")
-        return []
+        return set()
 
-def save_links_to_file(links, filename="download_links.txt"):
-    """Save the found links to a text file"""
-    with open(filename, 'w', encoding='utf-8') as f:
-        f.write(f"Found {len(links)} download links:\n\n")
-        for i, link in enumerate(links, 1):
-            f.write(f"{i}. ID: {link['id']}\n")
-            f.write(f"   URL: {link['url']}\n")
-            f.write(f"   Text: {link['text']}\n")
-            f.write(f"   Href: {link['href']}\n\n")
+def download_file(session, url, file_id, max_retries=3):
+    """
+    Download a single file with retry logic
+    """
+    for attempt in range(max_retries):
+        try:
+            # print(f"  Downloading file ID {file_id}... (attempt {attempt + 1})")
+            
+            response = session.get(
+                url,
+                headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'},
+                timeout=60,
+                stream=True
+            )
+            response.raise_for_status()
+            
+            # Get the content as text
+            content = response.text
+            
+            # Check if we got actual content (not an error page)
+            if len(content.strip()) > 0 and "error" not in content.lower():
+                return content
+            else:
+                print(f"    Warning: File {file_id} appears to be empty or error")
+                return None
+                
+        except requests.RequestException as e:
+            print(f"    Error downloading {file_id}: {e}")
+            if attempt < max_retries - 1:
+                print(f"    Retrying in 5 seconds...")
+                time.sleep(SLEEP_TIME)
+            else:
+                print(f"    Failed to download {file_id} after {max_retries} attempts")
+                return None
 
-def main():
-    # Example usage
-    search_term = "2023-03"  # Change this to your desired search term
-    
+def download_and_concatenate_files(search_term="2023-03", output_filename="combined_vugraph_files.txt") -> int:
+    """
+    Main function to get IDs, download files, and concatenate contents
+    """
     print(f"Searching for downloads with term: {search_term}")
-    download_links = get_vugraph_download_links(search_term)
     
-    if download_links:
-        print(f"Found {len(download_links)} download links:")
-        for i, link in enumerate(download_links, 1):
-            print(f"{i}. ID: {link['id']} - {link['text']}")
-            print(f"   URL: {link['url']}")
+    # Get the file IDs
+    download_ids = get_vugraph_ids(search_term)
+    
+    if not download_ids:
+        print("No download links found.")
+        return 0
+    
+    print(f"Found {len(download_ids)} files to download")
+    
+    # Create session for persistent connections
+    session = requests.Session()
+    
+    # List to store all file contents
+    all_contents = []
+    successful_downloads = 0
+    
+    # Download each file
+    for i, file_id in enumerate(download_ids, 1):
+        full_url = f"https://www.bridgebase.com/tools/vugraph_linfetch.php?id={file_id}"
+        
+        # print(f"File {i}/{len(download_ids)}:")
+        content = download_file(session, full_url, file_id)
+        
+        if content:
+            # Add a separator with file info
+            file_header = f"\n{'='*60}\n"
+            file_header += f"File ID: {file_id}\n"
+            file_header += f"URL: {full_url}\n"
+            file_header += f"Downloaded at: {time.strftime('%Y-%m-%d %H:%M:%S')}\n"
+            file_header += f"{'='*60}\n\n"
+            
+            all_contents.append(file_header + content)
+            successful_downloads += 1
+            # print(f"  ✓ Successfully downloaded file {file_id}")
+        else:
+            print(f"  ✗ Failed to download file {file_id}")
+        
+        # Small delay to be respectful to the server
+        time.sleep(SLEEP_TIME)
+    
+    # Concatenate all contents
+    if all_contents:
+        print(f"\nConcatenating {successful_downloads} files...")
+        combined_content = "\n".join(all_contents)
         
         # Save to file
-        save_links_to_file(download_links)
-        print(f"\nLinks saved to 'download_links.txt'")
-        
-        # Also save just the URLs for easy downloading
-        with open("urls_only.txt", 'w', encoding='utf-8') as f:
-            for link in download_links:
-                f.write(link['url'] + '\n')
-        print("URLs-only list saved to 'urls_only.txt'")
-        
-    else:
-        print("No download links found.")
-        
-        # Debug: check what's on the page
-        print("\nChecking page content...")
         try:
-            session = requests.Session()
-            response = session.post(
-                "https://www.bridgebase.com/vugraph_archives/vugraph_archives.php",
-                params={'v3b': ''},
-                data={'searchstring': search_term, 'command': 'search'},
-                headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'},
-                timeout=60
-            )
+            with open(output_filename, 'a', encoding='utf-8') as f:
+                f.write(combined_content)
             
-            # Check if we have any links at all
-            soup = BeautifulSoup(response.content, 'html.parser')
-            all_links = soup.find_all('a', href=True)
-            print(f"Total links on page: {len(all_links)}")
+            print(f"✓ Successfully saved {successful_downloads} files to '{output_filename}'")
+            print(f"Total file size: {len(combined_content)} characters")
             
-            # Show links that contain 'vugraph'
-            vugraph_links = [a for a in all_links if 'vugraph' in a['href']]
-            print(f"Links containing 'vugraph': {len(vugraph_links)}")
-            for link in vugraph_links[:5]:  # Show first 5
-                print(f"  - {link['href']}")
-                
         except Exception as e:
-            print(f"Debug failed: {e}")
+            print(f"Error saving file: {e}")
+        return successful_downloads
+    else:
+        print("No files were successfully downloaded.")
+        return 0
 
+def count_lines(filename) -> int:
+    with open(filename, 'r', encoding='utf-8') as f:
+        return sum(1 for _ in f)
+
+
+
+def main():
+    months = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
+    downloaded_count = 0
+    output_file = "scraped_data.txt"
+    for month in months:
+        search_term = f"2024-{month}"
+        downloaded_count += download_and_concatenate_files(search_term, output_file)
+        games_count = count_lines(output_file) - downloaded_count * 7
+        if games_count > 50000:
+            break
+    
 if __name__ == "__main__":
     main()
