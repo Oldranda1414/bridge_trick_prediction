@@ -1,191 +1,81 @@
-#!/usr/bin/env python3
-"""
-Parse the bridge match text format and extract per-board rows into CSV.
-
-Extracted fields per row:
- - board
- - north_hand, east_hand, south_hand, west_hand
- - declarer (N/E/S/W)  -- determined from bidding using the correct dealer rotation
- - final_contract       -- the last non-pass level/suit bid (e.g. 4S, 6NTx, 2C!)
- - first_card           -- the very first played card (first pc tag encountered)
- - tricks               -- integer from mc|...|
-
-This version DOES NOT assume that tags are at the start of lines and supports
-multiple tags on the same line. It also correctly handles cases where bids
-appear before the md (deal) tag by buffering unassigned bids and assigning
-players once the dealer is known.
-
-Usage:
-    python bridge_parser_to_csv.py input.txt output.csv
-
-"""
-
 import csv
 import re
 import sys
-from pathlib import Path
 
-TAG_RE = re.compile(r"([a-z]{1,3})\|([^|]*)\|", re.IGNORECASE)
-BASE_ORDER = ["N", "E", "S", "W"]
+# Pattern to find tags of interest
+tag_pattern = re.compile(r'(qx\|[^|]+\||md\|[^|]+\||mb\|[^|]+\||pc\|[^|]+\||mc\|[^|]+\|)')
 
-
-def rotated_players(start_index: int):
-    return BASE_ORDER[start_index:] + BASE_ORDER[:start_index]
-
-
-def parse_file(infile_path):
+def parse_bridge_file(input_path, output_path):
     boards = []
-
     current_board = {}
-    # assigned bids: list of (bid_str, player)
-    bids_with_players = []
-    # unassigned bids (strings) when dealer/player order not known yet
-    unassigned_bids = []
-    player_order = None
 
     def flush_board():
-        nonlocal current_board, bids_with_players, unassigned_bids, player_order
-        if not current_board:
-            return
-
-        # If dealer known now, assign any buffered bids
-        if player_order is not None and unassigned_bids:
-            for i, bid in enumerate(unassigned_bids):
-                assigned_player = player_order[(len(bids_with_players) + i) % 4]
-                bids_with_players.append((bid, assigned_player))
-            unassigned_bids.clear()
-
-        # Determine declarer and final_contract (last bid that starts with a digit)
-        declarer = None
-        final_contract = None
-        for bid, player in reversed(bids_with_players):
-            if re.match(r"^\d", bid):
-                declarer = player
-                final_contract = bid
-                break
-
-        if declarer is not None:
-            current_board["declarer"] = declarer
-            current_board["final_contract"] = final_contract
-
-        # Only append boards that have the minimal data requested
-        if "north_hand" in current_board and "tricks" in current_board:
+        if current_board and current_board.get("hands") and (
+            current_board.get("tricks") or current_board.get("first_card")
+        ):
             boards.append(current_board.copy())
 
-        # reset board-level state
-        current_board = {}
-        bids_with_players = []
-        unassigned_bids = []
+    with open(input_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            for match in tag_pattern.finditer(line):
+                token = match.group(1)
+                parts = token.split('|')
+                if not parts:
+                    continue
+                tag = parts[0]
+                data = parts[1] if len(parts) > 1 else ''
 
-    # Open and parse
-    with open(infile_path, "r", encoding="utf-8") as fh:
-        for lineno, raw_line in enumerate(fh, start=1):
-            line = raw_line.rstrip("\n")
-
-            for m in TAG_RE.finditer(line):
-                tag = m.group(1).lower()
-                val = m.group(2)
-
-                if tag == "qx":
-                    # new board -- flush previous
+                if tag == 'qx':
                     flush_board()
-                    # start new board
-                    current_board = {}
-                    bids_with_players = []
-                    unassigned_bids = []
-                    player_order = None
+                    current_board = {
+                        "board": data,
+                        "hands": None,
+                        "tricks": None,
+                        "first_card": None,
+                        "declarer": None,
+                        "final_contract": None
+                    }
 
-                    current_board["board"] = val
-
-                elif tag == "md":
-                    full_md = val.strip()
-                    # md may start with dealer code 1-4
-                    dm = re.match(r"^([1-4])(.*)$", full_md)
-                    if dm:
-                        dealer_code = int(dm.group(1))
-                        hands_str = dm.group(2)
-                        player_order = rotated_players(dealer_code - 1)
-                    else:
-                        hands_str = full_md
-
-                    # split into 4 hands (N,E,S,W ordering in file)
-                    hands = [h.strip() for h in hands_str.split(",") if h.strip() != ""]
+                elif tag == 'md':
+                    hands = data.split(',')
                     if len(hands) == 4:
-                        current_board["north_hand"] = hands[0]
-                        current_board["east_hand"] = hands[1]
-                        current_board["south_hand"] = hands[2]
-                        current_board["west_hand"] = hands[3]
+                        current_board['hands'] = hands
 
-                    # if we just discovered player_order, assign buffered bids
-                    if player_order is not None and unassigned_bids:
-                        for i, bid in enumerate(unassigned_bids):
-                            assigned_player = player_order[(len(bids_with_players) + i) % 4]
-                            bids_with_players.append((bid, assigned_player))
-                        unassigned_bids.clear()
+                elif tag == 'mb':
+                    bid = data.strip()
+                    if bid and bid not in ('p', 'P'):
+                        current_board['final_contract'] = bid
 
-                elif tag == "mb":
-                    bid = val.strip()
-                    if not bid:
-                        continue
-                    if player_order is None:
-                        unassigned_bids.append(bid)
-                    else:
-                        assigned_player = player_order[len(bids_with_players) % 4]
-                        bids_with_players.append((bid, assigned_player))
+                elif tag == 'pc':
+                    if current_board.get('first_card') is None:
+                        current_board['first_card'] = data.strip()
 
-                elif tag == "pc":
-                    card = val.strip()
-                    if card and "first_card" not in current_board:
-                        current_board["first_card"] = card
-
-                elif tag == "mc":
-                    num = val.strip()
+                elif tag == 'mc':
                     try:
-                        current_board["tricks"] = int(num)
+                        current_board['tricks'] = int(data.strip())
                     except ValueError:
-                        # ignore malformed
                         pass
 
-                # other tags are ignored for this extraction
-
-    # EOF flush
     flush_board()
-    return boards
 
+    with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['board', 'north_hand', 'east_hand', 'south_hand', 'west_hand', 'final_contract', 'first_card', 'tricks'])
+        for b in boards:
+            h = b.get('hands', ['','','',''])
+            writer.writerow([
+                b.get('board', ''),
+                h[0] if len(h) > 0 else '',
+                h[1] if len(h) > 1 else '',
+                h[2] if len(h) > 2 else '',
+                h[3] if len(h) > 3 else '',
+                b.get('final_contract', ''),
+                b.get('first_card', ''),
+                b.get('tricks', '')
+            ])
 
-def write_csv(rows, outpath):
-    fieldnames = [
-        "board",
-        "north_hand",
-        "east_hand",
-        "south_hand",
-        "west_hand",
-        "declarer",
-        "final_contract",
-        "first_card",
-        "tricks",
-    ]
-    with open(outpath, "w", newline="", encoding="utf-8") as ofh:
-        writer = csv.DictWriter(ofh, fieldnames=fieldnames)
-        writer.writeheader()
-        for r in rows:
-            # ensure all keys present (empty string if missing)
-            out = {k: r.get(k, "") for k in fieldnames}
-            writer.writerow(out)
-
-
-if __name__ == "__main__":
-    if len(sys.argv) < 3:
+if __name__ == '__main__':
+    if len(sys.argv) != 3:
         print("Usage: python bridge_parser_to_csv.py input.txt output.csv")
-        sys.exit(1)
-
-    input_path = Path(sys.argv[1])
-    output_path = Path(sys.argv[2])
-
-    if not input_path.exists():
-        print(f"Input file does not exist: {input_path}")
-        sys.exit(2)
-
-    rows = parse_file(input_path)
-    write_csv(rows, output_path)
-    print(f"Wrote {len(rows)} boards to {output_path}")
+    else:
+        parse_bridge_file(sys.argv[1], sys.argv[2])
