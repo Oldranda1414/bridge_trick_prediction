@@ -11,7 +11,7 @@ def parse_bridge_file(input_path, output_path):
 
     def flush_board():
         if current_board and current_board.get("hands") and (
-            current_board.get("tricks") or current_board.get("first_card")
+            current_board.get("tricks") is not None or current_board.get("first_card")
         ):
             boards.append(current_board.copy())
 
@@ -28,23 +28,15 @@ def parse_bridge_file(input_path, output_path):
                 if tag == 'qx':
                     flush_board()
                     current_board = {
-                        "board": data,
                         "hands": None,
-                        "tricks": None,
                         "first_card": None,
-                        "declarer": None,
-                        "final_contract": None
+                        "tricks": None
                     }
 
                 elif tag == 'md':
                     hands = data.split(',')
                     if len(hands) == 4:
                         current_board['hands'] = hands
-
-                elif tag == 'mb':
-                    bid = data.strip()
-                    if bid and bid not in ('p', 'P'):
-                        current_board['final_contract'] = bid
 
                 elif tag == 'pc':
                     if current_board.get('first_card') is None:
@@ -60,16 +52,14 @@ def parse_bridge_file(input_path, output_path):
 
     with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile)
-        writer.writerow(['board', 'north_hand', 'east_hand', 'south_hand', 'west_hand', 'final_contract', 'first_card', 'tricks'])
+        writer.writerow(['north_hand', 'east_hand', 'south_hand', 'west_hand', 'first_card', 'tricks'])
         for b in boards:
             h = b.get('hands', ['','','',''])
             writer.writerow([
-                b.get('board', ''),
                 h[0] if len(h) > 0 else '',
                 h[1] if len(h) > 1 else '',
                 h[2] if len(h) > 2 else '',
                 h[3] if len(h) > 3 else '',
-                b.get('final_contract', ''),
                 b.get('first_card', ''),
                 b.get('tricks', '')
             ])
