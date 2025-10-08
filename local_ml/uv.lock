@@ -490,6 +490,7 @@ dependencies = [
     { name = "matplotlib" },
     { name = "numpy" },
     { name = "pandas" },
+    { name = "scikeras" },
     { name = "scikit-learn" },
     { name = "tensorflow" },
 ]
@@ -499,6 +500,7 @@ requires-dist = [
     { name = "matplotlib", specifier = ">=3.10.6" },
     { name = "numpy", specifier = ">=2.3.3" },
     { name = "pandas", specifier = ">=2.3.3" },
+    { name = "scikeras", specifier = ">=0.13.0" },
     { name = "scikit-learn", specifier = ">=1.7.2" },
     { name = "tensorflow", specifier = ">=2.20.0" },
 ]
@@ -1110,6 +1112,19 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/fe/75/af448d8e52bf1d8fa6a9d089ca6c07ff4453d86c65c145d0a300bb073b9b/rich-14.1.0.tar.gz", hash = "sha256:e497a48b844b0320d45007cdebfeaeed8db2a4f4bcf49f15e455cfc4af11eaa8", size = 224441, upload_time = "2025-07-25T07:32:58.125Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e3/30/3c4d035596d3cf444529e0b2953ad0466f6049528a879d27534700580395/rich-14.1.0-py3-none-any.whl", hash = "sha256:536f5f1785986d6dbdea3c75205c473f970777b4a0d6c6dd1b696aa05a3fa04f", size = 243368, upload_time = "2025-07-25T07:32:56.73Z" },
+]
+
+[[package]]
+name = "scikeras"
+version = "0.13.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "keras" },
+    { name = "scikit-learn" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a8/b2/81d1f018259cb84e20a814622e67b1384edd0a584589f1a2bce5c5bdd8c9/scikeras-0.13.0.tar.gz", hash = "sha256:bfc720b2755f6c09981da13c9858e999a4bf775c49b0a296847dd1adad4c5d7d", size = 24154, upload_time = "2024-04-11T22:24:07.259Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ea/09/1c02aa24daf7a003c06f629fbb69dc9ae1bda1b247d7b8981e550d752ac9/scikeras-0.13.0-py3-none-any.whl", hash = "sha256:beeec4536129e316f8ffa56b32cbc097fa9168f3789feb243cadb8d9a36a0084", size = 26417, upload_time = "2024-04-11T22:24:06.101Z" },
 ]
 
 [[package]]

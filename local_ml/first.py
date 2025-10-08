@@ -1,3 +1,4 @@
+import os
 from tensorflow import keras
 from tensorflow.keras import layers
 from sklearn.model_selection import train_test_split
@@ -48,7 +49,10 @@ history = model.fit(
 loss, mae = model.evaluate(X_test, y_test)
 print(f"Test MAE (scaled): {mae:.4f}")
 
-# === Plot training curves ===
+# === Create output directory if not exists ===
+os.makedirs("plots", exist_ok=True)
+
+# === Plot training curves and save ===
 plt.figure(figsize=(12, 5))
 
 # Loss
@@ -72,5 +76,8 @@ plt.legend()
 plt.grid(True)
 
 plt.tight_layout()
-plt.show()
+plt.savefig("plots/training_curves.png", dpi=300)
+plt.close()
+
+print("✅ Training curves saved to: plots/training_curves.png")
 
