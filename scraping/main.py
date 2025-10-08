@@ -181,8 +181,6 @@ def count_lines(filename) -> int:
     with open(filename, 'r', encoding='utf-8') as f:
         return sum(1 for _ in f)
 
-
-
 def main():
     months = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
     downloaded_count = 0
@@ -190,8 +188,10 @@ def main():
     for month in months:
         search_term = f"2024-{month}"
         downloaded_count += download_and_concatenate_files(search_term, output_file)
-        games_count = count_lines(output_file) - downloaded_count * 7
+        games_count = (count_lines(output_file) - downloaded_count * 7) / 13
+        print(f"circa {games_count} games found till now")
         if games_count > 50000:
+            print(f"circa {games_count} games found in total")
             break
     
 if __name__ == "__main__":
