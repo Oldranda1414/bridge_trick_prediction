@@ -3,7 +3,6 @@ import hashlib
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from scipy import stats
 from tensorflow import keras
 from tensorflow.keras import layers
 from sklearn.model_selection import GroupKFold
