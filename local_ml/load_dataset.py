@@ -127,13 +127,21 @@ def encode_row_to_input(row: pd.Series) -> Tuple[np.ndarray, int]:
 def load_csv_to_dataset(path: str) -> Tuple[np.ndarray, np.ndarray]:
     df = pd.read_csv(path)
     xs, ys = [], []
+    skipped_rows = []
+
     for idx, row in df.iterrows():
         try:
             x, y = encode_row_to_input(row)
             xs.append(x)
             ys.append(y)
         except Exception as e:
-            raise RuntimeError(f"Error processing row {idx}: {e}") from e
+            skipped_rows.append(idx)
+            print(f"⚠ Skipping row {idx} due to error: {e}")
+            continue  # just skip this row
+
+    if len(skipped_rows) > 0:
+        print(f"\nTotal skipped rows: {len(skipped_rows)}")
+    
     X = np.vstack(xs).astype(np.float32)
     y = np.array(ys, dtype=np.int32)
     return X, y
