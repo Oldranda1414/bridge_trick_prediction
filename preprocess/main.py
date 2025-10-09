@@ -1,6 +1,7 @@
 import csv
 import re
 import sys
+from typing import Any
 
 # Pattern to find tags of interest
 tag_pattern = re.compile(r'(qx\|[^|]+\||md\|[^|]+\||mb\|[^|]+\||pc\|[^|]+\||mc\|[^|]+\|)')
@@ -11,31 +12,29 @@ CARD_VALUES = {
     'T': 10, 'J': 11, 'Q': 12, 'K': 13, 'A': 14
 }
 
-def get_trump_from_bidding(bidding_sequence):
-    """Extract trump suit from bidding sequence"""
+def get_trump_from_bidding(bidding_sequence) -> str | None:
+    """Extract trump suit from the final contract bid (last non-pass bid)."""
     if not bidding_sequence:
         return None
-    
-    # Look for the last contract bid (number followed by suit)
+
+    # Go through the bidding sequence backwards
     for bid in reversed(bidding_sequence):
+        bid = bid.strip().upper()
         if len(bid) >= 2 and bid[0].isdigit() and bid[1] in 'CDHSN':
             suit_char = bid[1]
             suit_map = {'C': 'C', 'D': 'D', 'H': 'H', 'S': 'S', 'N': 'NT'}
             return suit_map.get(suit_char)
-    
     return None
 
-def calculate_tricks_won_by_declarer(play_sequence, trump_suit, first_player_index):
+def calculate_tricks_won_by_declarer(play_sequence, trump_suit, first_player_index) -> int | None:
     """
-    Calculate how many tricks were won by declarer's side
+    Calculate how many tricks were won by declarer's side.
     first_player_index: 0=N, 1=E, 2=S, 3=W (the player who led the first card)
     Returns: tricks won by declarer's side
     """
     if not play_sequence:
         return None
     
-    # The first player to play is from the defending side (didn't win bidding)
-    # So if first player is N/S, declarer is E/W, and vice versa
     declarer_side = 'EW' if first_player_index in [0, 2] else 'NS'
     
     tricks_won_by_declarer = 0
@@ -46,25 +45,19 @@ def calculate_tricks_won_by_declarer(play_sequence, trump_suit, first_player_ind
         current_trick.append((card, current_leader))
         current_leader = (current_leader + 1) % 4  # Move to next player
         
-        # When we have 4 cards, the trick is complete
         if len(current_trick) == 4:
-            # Determine winner of this trick
             winning_card, winning_player = determine_trick_winner(current_trick, trump_suit)
-            
-            # Check if winner is on declarer's side
             if (declarer_side == 'NS' and winning_player in [0, 2]) or \
                (declarer_side == 'EW' and winning_player in [1, 3]):
                 tricks_won_by_declarer += 1
-            
-            # Winner leads next trick
             current_leader = winning_player
             current_trick = []
     
     return tricks_won_by_declarer
 
-def determine_trick_winner(trick_cards, trump_suit):
-    """Determine who wins a trick given the cards played and trump suit"""
-    led_suit = trick_cards[0][0][0].upper()  # Suit of first card
+def determine_trick_winner(trick_cards, trump_suit) -> tuple[str, int]:
+    """Determine who wins a trick given the cards played and trump suit."""
+    led_suit = trick_cards[0][0][0].upper()
     
     winning_card, winning_player = trick_cards[0]
     winning_value = get_card_value(winning_card, led_suit, trump_suit)
@@ -77,38 +70,34 @@ def determine_trick_winner(trick_cards, trump_suit):
     return winning_card, winning_player
 
 def get_card_value(card, led_suit, trump_suit):
-    """Get numeric value of card considering trump and led suit"""
+    """Get numeric value of card considering trump and led suit."""
     suit = card[0].upper()
     rank = card[1]
-    
     base_value = CARD_VALUES.get(rank, 0)
     
-    # Trump cards are highest
     if trump_suit and suit == trump_suit:
-        return 100 + base_value  # Trump cards valued 100+
-    # Cards of led suit are next
+        return 100 + base_value  # Trump cards are valued higher
     elif suit == led_suit:
         return base_value
-    # Off-suit cards are lowest
     else:
         return 0
 
-def parse_bridge_file(input_path, output_path):
+def parse_bridge_file(input_path, output_path) -> None:
     boards = []
-    current_board = {}
-    current_play_sequence = []
-    current_bidding = []
+    current_board: dict[str, Any] = {}
+    current_play_sequence: list[str] = []
+    current_bidding: list[str] = []
     in_board = False
 
-    def flush_board():
+    def flush_board() -> None:
         nonlocal in_board, current_play_sequence, current_bidding
         if current_board and current_board.get("hands"):
+            # Determine trump from bidding
+            trump_suit = get_trump_from_bidding(current_bidding)
+            current_board['trump'] = trump_suit
+
             # Calculate tricks if not provided
             if current_board.get("tricks") is None and current_play_sequence:
-                # Determine trump from bidding
-                trump_suit = get_trump_from_bidding(current_bidding)
-                
-                # Determine first player (who led the first card)
                 first_card = current_play_sequence[0] if current_play_sequence else None
                 first_player_index = determine_first_player(first_card, current_board["hands"])
                 
@@ -119,7 +108,6 @@ def parse_bridge_file(input_path, output_path):
                     if calculated_tricks is not None:
                         current_board['tricks'] = calculated_tricks
             
-            # Only add board if we have at least hands and either tricks or first_card
             if current_board.get("tricks") is not None or current_board.get("first_card"):
                 boards.append(current_board.copy())
         
@@ -128,27 +116,19 @@ def parse_bridge_file(input_path, output_path):
         current_bidding = []
         in_board = False
 
-    def determine_first_player(first_card, hands):
-        """Determine which player (0=N, 1=E, 2=S, 3=W) played the first card"""
+    def determine_first_player(first_card, hands) -> int | None:
         if not first_card or not hands:
             return None
-        
-        # Check which hand contains the first card
         for i, hand in enumerate(hands):
             if hand_contains_card(hand, first_card):
                 return i
         return None
 
-    def hand_contains_card(hand, card):
-        """Check if a hand contains the specified card"""
-        # Hand format: "SJT754H87DAQT3CAK" - suits in S,H,D,C order
+    def hand_contains_card(hand, card) -> bool:
         suit = card[0].upper()
         rank = card[1]
-        
-        # Find the suit section in the hand
         suit_pattern = re.compile(r'([SHDC])([2-9AKQJT]+)')
         matches = suit_pattern.findall(hand)
-        
         for hand_suit, ranks in matches:
             if hand_suit == suit and rank in ranks:
                 return True
@@ -169,7 +149,8 @@ def parse_bridge_file(input_path, output_path):
                     current_board = {
                         "hands": None,
                         "first_card": None,
-                        "tricks": None
+                        "tricks": None,
+                        "trump": None
                     }
                     in_board = True
                     current_play_sequence = []
@@ -195,11 +176,11 @@ def parse_bridge_file(input_path, output_path):
                     except ValueError:
                         pass
 
-    flush_board()  # Don't forget the last board
+    flush_board()
 
     with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile)
-        writer.writerow(['south_hand', 'west_hand', 'north_hand', 'east_hand', 'first_card', 'tricks'])
+        writer.writerow(['south_hand', 'west_hand', 'north_hand', 'east_hand', 'first_card', 'trump', 'tricks'])
         for b in boards:
             h = b.get('hands', ['','','',''])
             writer.writerow([
@@ -208,6 +189,7 @@ def parse_bridge_file(input_path, output_path):
                 h[2] if len(h) > 2 else '',
                 h[3] if len(h) > 3 else '',
                 b.get('first_card', ''),
+                b.get('trump', ''),
                 b.get('tricks', '')
             ])
 
@@ -216,3 +198,4 @@ if __name__ == '__main__':
         print("Usage: python bridge_parser_to_csv.py input.txt output.csv")
     else:
         parse_bridge_file(sys.argv[1], sys.argv[2])
+
