@@ -1,12 +1,9 @@
-# bridge_trump_baseline.py
-import os
 import hashlib
 import numpy as np
 import pandas as pd
 from tensorflow import keras
 from tensorflow.keras import layers
 from sklearn.model_selection import train_test_split, GroupKFold
-# import matplotlib.pyplot as plt
 
 from load_dataset import load_csv_to_dataset
 
@@ -78,58 +75,5 @@ if __name__ == "__main__":
     X, y = load_csv_to_dataset("bridge_data.csv")
     print("X shape", X.shape)
 
-    # run GroupKFold
     fold_maes_group = group_kfold_cv(df, X, y, k=5, epochs=50, batch_size=128)
 
-# # === Add early stopping ===
-# early_stopping = keras.callbacks.EarlyStopping(
-#     monitor='val_loss',
-#     patience=5,
-#     restore_best_weights=True
-# )
-#
-# # === Train model ===
-# history = model.fit(
-#     X_train, y_train,
-#     validation_data=(X_test, y_test),
-#     epochs=50,
-#     batch_size=128,
-#     callbacks=[early_stopping],
-#     verbose=1
-# )
-#
-# # === Evaluate performance ===
-# loss, mae = model.evaluate(X_test, y_test)
-# print(f"Test MAE: {mae:.4f}")
-
-# === Save plots ===
-# os.makedirs("plots", exist_ok=True)
-#
-# plt.figure(figsize=(12, 5))
-#
-# # Loss curve
-# plt.subplot(1, 2, 1)
-# plt.plot(history.history['loss'], label='Train Loss')
-# plt.plot(history.history['val_loss'], label='Val Loss')
-# plt.title('Training vs Validation Loss')
-# plt.xlabel('Epochs')
-# plt.ylabel('MSE Loss')
-# plt.legend()
-# plt.grid(True)
-#
-# # MAE curve
-# plt.subplot(1, 2, 2)
-# plt.plot(history.history['mae'], label='Train MAE')
-# plt.plot(history.history['val_mae'], label='Val MAE')
-# plt.title('Training vs Validation MAE')
-# plt.xlabel('Epochs')
-# plt.ylabel('Mean Absolute Error')
-# plt.legend()
-# plt.grid(True)
-#
-# plt.tight_layout()
-# plt.savefig("plots/training_curves.png", dpi=300)
-# plt.close()
-#
-# print("✅ Training curves saved to: plots/training_curves.png")
-#
