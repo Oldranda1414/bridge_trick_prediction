@@ -16,11 +16,13 @@ def build_model(n_layers=2, n_neurons=128, dropout=0.2, lr=1e-3):
     for _ in range(n_layers):
         model.add(layers.Dense(n_neurons, activation='relu'))
         model.add(layers.Dropout(dropout))
+        model.add(layers.BatchNormalization())
     
     model.add(layers.Dense(1, activation='linear'))
     model.compile(optimizer=keras.optimizers.Adam(learning_rate=lr),
                   loss='mse', metrics=['mae'])
     return model
+
 
 # === Wrap Keras model for scikit-learn ===
 regressor = KerasRegressor(
