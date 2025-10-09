@@ -109,7 +109,8 @@ def parse_bridge_file(input_path, output_path) -> None:
                         current_board['tricks'] = calculated_tricks
             
             if current_board.get("tricks") is not None or current_board.get("first_card"):
-                boards.append(current_board.copy())
+                if any(hand_contains_card(hand, current_board["first_card"]) for hand in current_board['hands']):
+                    boards.append(current_board.copy())
         
         current_board.clear()
         current_play_sequence = []
