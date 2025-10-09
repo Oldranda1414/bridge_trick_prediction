@@ -1,6 +1,5 @@
 # bridge_onehot_loader.py
 import re
-from typing import List, Tuple, Dict
 import numpy as np
 import pandas as pd
 
@@ -8,7 +7,7 @@ import pandas as pd
 SUITS = ['S', 'H', 'D', 'C']
 RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A']
 ALL_CARDS = [s + r for s in SUITS for r in RANKS]  # 52 cards
-CARD_TO_IDX: Dict[str, int] = {card: i for i, card in enumerate(ALL_CARDS)}
+CARD_TO_IDX: dict[str, int] = {card: i for i, card in enumerate(ALL_CARDS)}
 
 # new: trumps
 TRUMPS = ['S', 'H', 'D', 'C', 'NT']
@@ -39,7 +38,7 @@ PARTNER = {
 def strip_leading_int(s: str) -> str:
     return re.sub(r'^\d+', '', s)
 
-def parse_hand(hand_str: str) -> List[str]:
+def parse_hand(hand_str: str) -> list[str]:
     if not isinstance(hand_str, str) or hand_str.strip() == '':
         return []
     s = strip_leading_int(hand_str.strip().upper())
@@ -60,7 +59,7 @@ def parse_hand(hand_str: str) -> List[str]:
             raise ValueError(f"Malformed hand string '{hand_str}' at pos {i}")
     return cards
 
-def one_hot_cards(cards: List[str]) -> np.ndarray:
+def one_hot_cards(cards: list[str]) -> np.ndarray:
     vec = np.zeros(len(ALL_CARDS), dtype=np.float32)
     for c in cards:
         vec[CARD_TO_IDX[c]] = 1.0
@@ -84,7 +83,7 @@ def one_hot_trump(trump: str) -> np.ndarray:
     return vec
 
 # ---- high-level encoding ----
-def encode_row_to_input(row: pd.Series) -> Tuple[np.ndarray, int]:
+def encode_row_to_input(row: pd.Series) -> tuple[np.ndarray, int]:
     """
     Expected columns:
         south_hand, west_hand, north_hand, east_hand, first_card, tricks, trump
@@ -124,7 +123,7 @@ def encode_row_to_input(row: pd.Series) -> Tuple[np.ndarray, int]:
     y = int(row['tricks'])
     return x, y
 
-def load_csv_to_dataset(path: str) -> Tuple[np.ndarray, np.ndarray]:
+def load_csv_to_dataset(path: str) -> tuple[np.ndarray, np.ndarray]:
     df = pd.read_csv(path)
     xs, ys = [], []
     skipped_rows = []
