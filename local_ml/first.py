@@ -1,10 +1,10 @@
+# bridge_trump_baseline.py
 import os
 from tensorflow import keras
 from tensorflow.keras import layers
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 
-# === Import your loader ===
 from load_dataset import load_csv_to_dataset
 
 # === Load dataset ===
@@ -18,11 +18,15 @@ X_train, X_test, y_train, y_test = train_test_split(
 
 # === Build model ===
 model = keras.Sequential([
-    layers.Input(shape=(X.shape[1],)),  # (156,)
+    layers.Input(shape=(X.shape[1],)),
     layers.Dense(256, activation='relu'),
+    layers.BatchNormalization(),
     layers.Dropout(0.3),
+
     layers.Dense(128, activation='relu'),
+    layers.BatchNormalization(),
     layers.Dropout(0.2),
+
     layers.Dense(64, activation='relu'),
     layers.Dense(1, activation='linear')
 ])
@@ -36,26 +40,33 @@ model.compile(
 
 model.summary()
 
+# === Add early stopping ===
+early_stopping = keras.callbacks.EarlyStopping(
+    monitor='val_loss',
+    patience=5,
+    restore_best_weights=True
+)
+
 # === Train model ===
 history = model.fit(
     X_train, y_train,
     validation_data=(X_test, y_test),
     epochs=50,
     batch_size=128,
-    # verbose=1
+    callbacks=[early_stopping],
+    verbose=1
 )
 
 # === Evaluate performance ===
 loss, mae = model.evaluate(X_test, y_test)
-print(f"Test MAE (scaled): {mae:.4f}")
+print(f"Test MAE: {mae:.4f}")
 
-# === Create output directory if not exists ===
+# === Save plots ===
 os.makedirs("plots", exist_ok=True)
 
-# === Plot training curves and save ===
 plt.figure(figsize=(12, 5))
 
-# Loss
+# Loss curve
 plt.subplot(1, 2, 1)
 plt.plot(history.history['loss'], label='Train Loss')
 plt.plot(history.history['val_loss'], label='Val Loss')
@@ -65,7 +76,7 @@ plt.ylabel('MSE Loss')
 plt.legend()
 plt.grid(True)
 
-# MAE
+# MAE curve
 plt.subplot(1, 2, 2)
 plt.plot(history.history['mae'], label='Train MAE')
 plt.plot(history.history['val_mae'], label='Val MAE')
