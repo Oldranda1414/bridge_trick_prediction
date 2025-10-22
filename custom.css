@@ -1,719 +1,90 @@
-/* 
-*************************************** 
-** Theme : One Dark Pro  
-** Version : 0.1.9
-** 
-** Author : Sanmeet Singh 
-** Contact : ssanmeet123@gmail.com
-** 
-*************************************** 
-*/
-
-/*     ########################################## */
-/*   ############################################## */
-/* ##############     Start of styles     ############# */
-/*   ############################################## */
-/*     ########################################## */
-
-/* Fonts */
-@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;500&display=swap");
-
-/* HTML and Body */
-:root {
-  /* Imp colors */
-  --accent-clr: rgb(99, 136, 210);
-  --select-clr: rgba(136, 154, 189, 0.2);
-  --link-clr: rgb(47, 136, 214);
-
-  /* Body clrs */
-  --bg: rgb(39, 43, 50);
-  --text: silver;
-  --dark: rgb(41, 46, 54);
-  --dark2: rgb(35, 39, 46);
-  --dark-222: rgb(34, 34, 34);
-  --dark-333: rgb(51, 51, 51);
-  --dark-555: rgb(85, 85, 85);
-  --black: rgb(0, 0, 0);
-  --shadow: rgba(120, 120, 120, 0.12);
-
-  /* Header */
-  --header: rgba(93, 103, 122, 0.5);
-  --header-dark: rgb(35, 39, 46);
-  --navbar: rgb(50, 57, 67);
-  --nav-li-hover: rgb(67, 77, 90);
-  --li-hover: rgb(62, 70, 82);
-
-  /* Main */
-  --notifs: rgb(99, 135, 209);
-  --text-dark: rgb(255, 255, 255);
-  --text-med: rgb(118, 116, 116);
-  --file-hover: rgb(178, 143, 60);
-  --cursor: rgb(75, 153, 198);
-
-  /* Button */
-  --btn: rgb(81, 98, 129);
-  --btn-text: rgb(215, 218, 224);
-  --btn-spl: rgb(93, 103, 122);
-
-  /* Notebook */
-  --ntbk-app: rgb(39, 43, 50);
-  --ntbk-con-shadow: rgba(87, 87, 87, 0.2);
-  --run-indicator: rgb(60, 134, 60);
-
-  /* Kernel */
-  --kernel-text: rgb(155, 155, 155);
-
-  /* Cell */
-  --selected-cell: rgb(57, 116, 151);
-  --selected-cell-light: rgba(128, 128, 128, 0.5);
-  --alert-info: rgb(40, 124, 165);
-
-  /* Editor */
-
-  --string: rgb(138, 195, 121);
-  --builtin: rgb(123, 185, 215);
-  --keyword: rgb(167, 120, 221);
-  --property: rgb(88, 175, 239);
-  --def: rgb(123, 185, 215);
-  --number: rgb(176, 154, 102);
-  --var2: rgb(229, 192, 123);
-  --var: rgb(194, 108, 117);
-  --operator: rgb(86, 182, 194);
-  --comment: rgb(115, 120, 119);
-  --atom: #e700e0;
-  --attribute: rgb(209, 154, 102);
-  --meta: #ddd7a3;
-  --var3: #f9df60;
-  --error-bg: rgba(126, 18, 25, 0.5);
-  --storage: #f700fb;
-  --tag: #d56a62;
-  --quote: #fd9800;
-  --link: #7ec2f3;
-  --entity: #8b88ff;
-  --text-editor-backdrop: rgb(37, 42, 49);
-
-  /* Dialog */
-  --modal-border: rgb(51, 57, 67);
-  --modal-body: rgb(39, 43, 50);
-  --modal-border-light: rgb(62, 68, 82);
-  --pre: rgb(28, 31, 33);
-
-  /* Ouput */
-  --output-bg: rgb(17, 17, 17);
-  --error: rgb(255, 0, 0);
-  --output-prompt: rgb(255, 189, 3);
-}
-
-::-moz-selection,
-*::-moz-selection {
-  background-color: var(--select-clr) !important;
-}
-
-::selection,
-*::selection,
-.cm-s-ipython div.CodeMirror-selected {
-  background-color: var(--select-clr) !important;
-}
-
-a:hover,
-a:focus {
-  color: var(--link-clr);
-}
-
-html {
-  color-scheme: dark;
-  accent-color: var(--accent-clr);
-}
-
+/* ===== Notebook Dark Theme ===== */
 body {
-  min-height: 100vh;
-  background-color: var(--bg) !important;
-  font-family: "Roboto", sans-serif;
-  color: var(--text);
+    background-color: #0d1117;
+    color: #c9d1d9;
+    font-family: system-ui, sans-serif;
+    line-height: 1.5;
 }
 
-/* ----------------------------------------------------- */
-
-/*
-**************************
-*** Header  and navbar ***
-**************************
-*/
-
-body > #header .header-bar {
-  background-color: var(--header);
-}
-body > #header #header-container {
-  color: var(--text);
-  padding-top: 1.2rem;
-  display: flex;
-  align-items: center;
-}
-
-body > #header {
-  background-color: var(--header-dark) !important;
-}
-
-.navbar-default {
-  background-color: var(--navbar);
-  border: none;
-}
-.navbar-default .navbar-nav > li > a {
-  color: var(--text);
-  background-color: transparent;
-  transition: all 0.1s ease-in;
-}
-
-.navbar-default .navbar-nav > li > a:hover {
-  color: var(--text);
-  background-color: var(--nav-li-hover);
-}
-
-.navbar-default .navbar-text {
-  color: inherit;
-}
-
-.notification_widget {
-  color: var(--text-dark);
-  border: none;
-  background-color: var(--notifs);
-}
-
-.navbar-brand {
-  filter: invert(1);
-}
-
-#save_widget .filename:hover,
-#notebook_name:hover {
-  background-color: transparent;
-  color: var(--file-hover);
-}
-
-/* ----------------------------------------------------- */
-
-/*
-****************
-*** Main app ***
-****************
-*/
-#ipython-main-app {
-  position: relative;
-}
-#jupyter-main-app {
-  position: relative;
-}
-
-/* ----------------------------------------------------- */
-
-/* 
-***************
-*** Buttons ***
-***************
- */
-
-.btn-default {
-  color: var(--btn-text);
-  background-color: var(--btn);
-  border: none;
-  outline: none !important;
-  transition: all 0.2s ease-in;
-}
-
-#shutdown,
-#logout {
-  background-color: var(--btn-spl) !important;
-  border: none;
-  color: var(--text-dark) smoke;
-  text-transform: uppercase;
-}
-
-/* ----------------------------------------------------- */
-
-/* 
-***************************
-***   Menu & Dropdowns  ***
-***************************
- */
-#menubar-container {
-  margin-top: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.7rem;
-}
-
-#kernel_indicator .kernel_indicator_name {
-  color: var(--kernel-text);
-}
-.notebook_app {
-  background-color: var(--ntbk-app);
-}
-
-div.cell.selected,
-div.cell.selected.jupyter-soft-selected {
-  transition: all 0.2s ease;
-}
-div.cell.selected:before,
-div.cell.selected.jupyter-soft-selected:before {
-  background-color: var(--selected-cell);
-}
-
-div.cell.selected,
-div.cell.selected.jupyter-soft-selected {
-  border-color: var(--selected-cell-light);
-}
-
-.dropdown-menu {
-  background-color: var(--dark);
-  box-shadow: 0 6px 12px var(--shadow);
-  -webkit-box-shadow: 0 6px 12px var(--shadow);
-}
-.dropdown-menu * {
-  transition: all 0.05s ease-in;
-}
-
-.dropdown-submenu > a:after,
-.dropdown-menu > li > a {
-  color: var(--text);
-}
-
-/* ----------------------------------------------------- */
-
-/* 
-******************
-*** Containers ***
-******************
- */
-#notebook-container {
-  padding: 15px;
-  background-color: var(--navbar);
-  min-height: 0;
-  box-shadow: 0px 0px 12px 1px var(--ntbk-con-shadow);
-}
-
-/* ----------------------------------------------------- */
-
-/* 
-******************
-***   Inputs   ***
-******************
- */
-div.input_prompt {
-  color: var(--text);
-}
-div.input_area {
-  background-color: var(--dark2);
-  border: none;
-}
-
-/* ----------------------------------------------------- */
-
-/* 
-******************
-***   Output   ***
-******************
- */
-div.output_text,
-div.output_area pre {
-  color: var(--text-dark) smoke;
-}
-
-div.output_stderr {
-  background-color: var(--error);
-}
-
-.output_subarea {
-  background-color: var(--output-bg);
-}
-
-div.output_area img,
-div.output_area svg {
-  filter: invert(1);
-}
-
-div.output_prompt {
-  color: var(--output-prompt);
-}
-
-div.out_prompt_overlay:hover {
-  background-color: none;
-  box-shadow: none;
-}
-
-.CodeMirror {
-  color: var(--text);
-}
-
-.CodeMirror-cursor {
-  padding-left: 0.5px;
-  border-left: 2px solid var(--cursor);
-}
-
-/* ----------------------------------------------------- */
-
-/* 
-******************
-***   Editor   ***
-******************
- */
-
-.cm-s-ipython span .cm-string {
-  color: var(--string) !important;
-}
-.cm-s-ipython span .cm-builtin {
-  color: var(--builtin) !important;
-}
-.cm-s-ipython span .cm-keyword {
-  color: var(--keyword) !important;
-}
-.cm-s-ipython span .cm-def {
-  color: var(--def) !important;
-}
-.cm-s-ipython span .cm-tab {
-  filter: invert(1);
-}
-.cm-s-ipython span .cm-number {
-  color: var(--number) !important ;
-}
-.cm-s-ipython span .cm-variable-2 {
-  color: var(--var2) !important ;
-}
-.cm-s-ipython span .cm-variable {
-  color: var(--var) !important;
-}
-.cm-s-ipython span .cm-operator {
-  color: var(--operator) !important;
-}
-
-.cm-s-ipython span .cm-property {
-  color: var(--property) !important;
+a {
+    color: #58a6ff;
+    text-decoration: none;
 }
-.cm-s-ipython span .cm-comment {
-  color: var(--comment) !important;
-}
-
-.cm-s-ipython span.cm-atom {
-  color: var(--atom) !important;
-}
-
-.cm-s-ipython span.cm-attribute {
-  color: var(--attribute) !important;
-}
-
-.cm-s-ipython span.cm-meta {
-  color: var(--meta) !important;
-}
-.cm-s-ipython span.cm-variable-3 {
-  color: var(--var3) !important;
-}
-
-.cm-s-ipython span.cm-error {
-  background: var(--error-bg) !important;
-}
-.cm-s-ipython span.cm-tag {
-  color: var(--tag) !important;
-}
-.cm-s-ipython span.cm-link {
-  color: var(--link) !important;
-}
-.cm-s-ipython span.cm-storage {
-  color: var(--storage) !important;
-}
-
-.cm-s-ipython span.cm-entity {
-  color: var(--entity) !important;
-}
-.cm-s-ipython span.cm-quote {
-  color: var(--quote) !important;
-}
-
-#texteditor-backdrop {
-  background-color: transparent;
-}
-
-.CodeMirror-scroll {
-  background-color: var(--dark2);
-}
-#texteditor-backdrop #texteditor-container .CodeMirror-gutter,
-#texteditor-backdrop #texteditor-container .CodeMirror-gutters {
-  background-color: var(--text-editor-backdrop);
-}
-
-.CodeMirror-gutters {
-  border-color: var(--modal-border) !important;
-  background-color: transparent;
-}
-
-.CodeMirror-dialog {
-  background-color: var(--dark);
-}
-.CodeMirror-dialog-top {
-  border-color: var(--modal-border);
-}
-
-/* ----------------------------------------------------- */
-
-/* 
-*************************************
-***   Modal   & Custom TypeHead   ***
-*************************************
- */
-
-.typeahead__dropdown,
-.typeahead__list,
-.modal-body {
-  color: var(--text);
-  background-color: var(--modal-body);
-}
-
-.typeahead__dropdown .typeahead__dropdown-item > a,
-.typeahead__list .typeahead__item > a {
-  color: var(--text);
-}
-.typeahead__field input,
-.typeahead__container.hint .typeahead__query > :last-child {
-  background-color: var(--dark2);
-  color: var(--text);
-  border: none;
-}
-
-.typeahead__container button > * {
-  filter: invert(1);
-}
-.typeahead__container button {
-  background-color: var(--btn);
-  border: none;
-  color: var(--text-dark) !important;
-  overflow: hidden;
-  border-top-right-radius: 2px;
-  border-bottom-right-radius: 2px;
-}
-
-.typeahead__query:before {
-  content: "Search query : ";
-  display: block;
-  color: var(--text-med);
-  transform: translate(10px, -8px);
-  position: absolute;
-  font-size: 1rem;
-}
-
-.typeahead__button,
-.typeahead__query,
-.typeahead__filter {
-  background-color: var(--dark);
-}
-ul.typeahead__list {
-  padding: 5px;
-}
 
-.modal-content {
-  background-color: var(--dark2);
+a:hover {
+    text-decoration: underline;
 }
 
-.modal-title {
-  color: var(--text-dark);
+/* Code blocks and inline code */
+pre, code {
+    background-color: #161b22 !important;
+    color: #e6edf3 !important;
+    font-family: "Fira Code", monospace;
+    font-size: 0.9em;
+    border-radius: 4px;
+    padding: 0.2em 0.4em;
 }
-.modal-header > button {
-  color: var(--text-dark);
-  transition: all 0.1s ease-in;
-}
-.modal-header > button:hover {
-  color: antiquevar(--text-dark);
-}
-
-.modal-header,
-.modal-footer {
-  border-color: var(--modal-border-light);
-}
-.modal-body pre {
-  padding: 5px;
-  margin: 10px 0;
-}
-
-/* ----------------------------------------------------- */
-
-/* 
-********************
-*** HTML Renders ***
-********************
- */
-
-.rendered_html {
-  color: var(--text);
-}
-
-.rendered_html h1,
-.rendered_html h2,
-.rendered_html h3,
-.rendered_html h4,
-.rendered_html h5,
-.rendered_html h6 {
-  all: revert;
-  font-size: initial;
-  font-weight: initial;
-  line-height: initial;
-}
-
-.rendered_html tr,
-.rendered_html td {
-  background: var(--dark-333);
-}
-.rendered_html th {
-  background: var(--dark-222);
-}
-.rendered_html table {
-  color: inherit;
-}
-.rendered_html pre,
-.rendered_html code {
-  padding: 10px;
-  color: var(--text);
-  background-color: var(--output-bg);
-}
-
-/* ----------------------------------------------------- */
-
-/* 
-*********************
-***   Dashboard   ***
-*********************
- */
-
-/* Lists */
-.list_header {
-  background-color: var(--navbar);
-}
 
-.list_container,
-.list_container > div {
-  border-color: var(--navbar);
+/* Output areas */
+div.output {
+    background-color: #161b22;
+    color: #e6edf3;
+    border-radius: 4px;
+    padding: 0.5em;
+    margin: 0.5em 0;
 }
 
-.list_container > div:hover {
-  background-color: var(--li-hover);
+/* Tables */
+table {
+    background-color: #0d1117;
+    color: #c9d1d9;
+    border-collapse: collapse;
+    margin: 1em 0;
 }
-.list_container > div {
-  transition: all 0.1s ease-in;
-}
-
-/* Tab */
-.tab-pane {
-  color: var(--text);
-}
-
-.nav-tabs > li.active > a,
-.nav-tabs > li.active > a:hover,
-.nav-tabs > li.active > a:focus {
-  color: var(--text-dark);
-  background-color: var(--navbar);
-  border-top: none;
-  border-right: none;
-  border-left: none;
-}
-
-.nav-tabs {
-  border-color: var(--navbar);
-}
-
-/* Panel */
-.panel-default > .panel-heading,
-.panel {
-  background-color: transparent;
-}
-.panel-default > .panel-heading,
-.panel-default {
-  border-color: var(--navbar);
-}
 
-#running .panel-group .panel .panel-heading {
-  background-color: var(--navbar);
+table th, table td {
+    border: 1px solid #30363d;
+    padding: 0.3em 0.6em;
 }
 
-.item_buttons .running-indicator {
-  color: var(--run-indicator);
+table th {
+    background-color: #161b22;
 }
 
-.celltoolbar {
-  background-color: var(--dark2);
-  border: none;
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+    color: #c9d1d9;
 }
 
-.cell-tag:last-child:after {
-  background: none;
+/* Horizontal rules */
+hr {
+    border-color: #30363d;
 }
 
-.cell-tag {
-  background-color: var(--notifs);
-  color: var(--text-dark);
-  border: none;
+/* Markdown blockquotes */
+blockquote {
+    border-left: 3px solid #58a6ff;
+    padding-left: 0.5em;
+    color: #8b949e;
+    background-color: #0d1117;
 }
 
-/* ----------------------------------------------------- */
-
-/* 
-****************
-*** Popovers ***
-****************
- */
-
-.popover {
-  background: var(--black);
-}
-.popover-title {
-  background-color: transparent;
-  border-color: var(--dark-555);
-}
-
-.popover.bottom > .arrow:after {
-  border-bottom-color: var(--black);
+/* Remove bright backgrounds in any divs */
+div.cell {
+    background-color: transparent;
 }
-/* ----------------------------------------------------- */
 
-/* 
-********************
-***    Mixed     ***
-********************
- */
-
-.modal-body pre,
-.well,
-.alert-info {
-  color: var(--alert-info);
-  background-color: var(--pre);
-  border: none;
-}
-
-.well code {
-  background-color: var(--output-bg);
-  color: var(--text);
+/* Scrollbars (optional, for code cells) */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
 }
 
-/* ----------------------------------------------------- */
-
-/* 
-****************************
-***    Media Queries     ***
-****************************
- */
-@media screen and (max-width: 700px) {
-  .container {
-    padding-inline: 2rem;
-  }
+::-webkit-scrollbar-track {
+    background: #0d1117;
 }
 
-@media print {
-  body {
-    color-adjust: exact !important;
-    print-color-adjust: exact !important;
-    -webkit-print-color-adjust: exact !important;
-  }
+::-webkit-scrollbar-thumb {
+    background-color: #30363d;
+    border-radius: 4px;
 }
-@page {
-  color-adjust: exact !important;
-  print-color-adjust: exact !important;
-  -webkit-print-color-adjust: exact !important;
-}
-
-/*     ######################################### */
-/* ##############     End of styles     ############# */
-/* ####################################################### */
