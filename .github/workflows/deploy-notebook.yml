@@ -23,13 +23,18 @@ jobs:
         with:
           python-version: "3.x"
 
-      - name: Install Jupyter
-        run: pip install jupyter
+      - name: Install Jupyter and dark template
+        run: pip install jupyter nbconvert-template-dark
 
-      - name: Convert notebook to HTML
+      - name: Convert notebook to dark HTML
         run: |
           mkdir -p build
-          jupyter nbconvert --to html colab/bridge_trick_prediction.ipynb --output-dir build --output index.html
+          jupyter nbconvert colab/bridge_trick_prediction.ipynb \
+            --to html \
+            --template dark \
+            --output-dir build \
+            --output index.html \
+            --template lab
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
