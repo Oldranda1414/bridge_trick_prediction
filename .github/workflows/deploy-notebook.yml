@@ -36,12 +36,8 @@ jobs:
 
       - name: Apply dark mode styling
         run: |
-          sed -i 's|</head>|<style>
-          body{background:#0d1117;color:#c9d1d9;font-family:system-ui,sans-serif;}
-          pre,code{background:#161b22;color:#e6edf3;}
-          a{color:#58a6ff;}
-          table{background:#0d1117;color:#c9d1d9;border-color:#30363d;}
-          </style></head>|' build/index.html
+          curl -L https://raw.githubusercontent.com/Sanmeet007/jupyter-dark-theme/main/dist/custom.css -o build/custom.css
+          sed -i 's|</head>|<link rel="stylesheet" href="custom.css"></head>|' build/index.html
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
