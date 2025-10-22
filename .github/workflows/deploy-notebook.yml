@@ -33,6 +33,7 @@ jobs:
             --to html \
             --output-dir build \
             --output index.html
+            --template lab
 
       - name: Apply dark mode styling
         run: |
