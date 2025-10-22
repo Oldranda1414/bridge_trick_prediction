@@ -29,7 +29,7 @@ jobs:
       - name: Convert notebook to HTML
         run: |
           mkdir -p build
-          jupyter nbconvert --to html --output-dir ./colab/bridge_trick_prediction.ipynb
+          jupyter nbconvert --to html colab/bridge_trick_prediction.ipynb --output-dir build
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
