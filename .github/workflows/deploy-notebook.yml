@@ -26,20 +26,21 @@ jobs:
       - name: Install Jupyter
         run: pip install jupyter
 
-      - name: Download custom dark CSS
-        run: |
-          mkdir -p /home/runner/.local/share/jupyter/dark
-
-          curl -L https://raw.githubusercontent.com/Sanmeet007/jupyter-dark-theme/main/dist/custom.css -o /home/runner/.local/share/jupyter/dark/custom.css
-
-      - name: Convert notebook to dark HTML
+      - name: Convert notebook to HTML
         run: |
           mkdir -p build
           jupyter nbconvert colab/bridge_trick_prediction.ipynb \
             --to html \
-            --template dark \
             --output-dir build \
             --output index.html \
+
+      - name: Make notebook dark mode
+        run: |
+          sed -i 's|</head>|<style>
+          body{background:#0d1117;color:#c9d1d9;}
+          pre,code{background:#161b22;color:#e6edf3;}
+          a{color:#58a6ff;}
+          </style></head>|' build/index.html
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
