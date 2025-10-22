@@ -26,6 +26,12 @@ jobs:
       - name: Install Jupyter
         run: pip install jupyter
 
+      - name: Download custom dark CSS
+        run: |
+          mkdir -p /home/runner/.local/share/jupyter/dark
+
+          curl -L https://raw.githubusercontent.com/Sanmeet007/jupyter-dark-theme/main/dist/custom.css -o /home/runner/.local/share/jupyter/dark/custom.css
+
       - name: Convert notebook to dark HTML
         run: |
           mkdir -p build
@@ -34,12 +40,6 @@ jobs:
             --template dark \
             --output-dir build \
             --output index.html \
-
-      - name: Apply custom dark CSS
-        run: |
-          mkdir -p /home/runner/.local/share/jupyter/dark
-
-          curl -L https://raw.githubusercontent.com/Sanmeet007/jupyter-dark-theme/main/dist/custom.css -o /home/runner/.local/share/jupyter/dark/custom.css
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
