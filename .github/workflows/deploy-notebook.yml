@@ -34,7 +34,6 @@ jobs:
             --template dark \
             --output-dir build \
             --output index.html \
-            --template lab
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
