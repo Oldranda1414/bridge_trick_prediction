@@ -35,6 +35,12 @@ jobs:
             --output-dir build \
             --output index.html \
 
+      - name: Apply custom dark CSS
+        run: |
+          mkdir -p /home/runner/.local/share/jupyter/dark
+
+          curl -L https://raw.githubusercontent.com/Sanmeet007/jupyter-dark-theme/main/dist/custom.css -o /home/runner/.local/share/jupyter/dark/custom.css
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
