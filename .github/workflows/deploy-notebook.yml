@@ -23,8 +23,8 @@ jobs:
         with:
           python-version: "3.x"
 
-      - name: Install Jupyter and dark template
-        run: pip install jupyter nbconvert-template-dark
+      - name: Install Jupyter
+        run: pip install jupyter
 
       - name: Convert notebook to dark HTML
         run: |
