@@ -1,0 +1,90 @@
+/* ===== Notebook Dark Theme ===== */
+body {
+    background-color: #0d1117;
+    color: #c9d1d9;
+    font-family: system-ui, sans-serif;
+    line-height: 1.5;
+}
+
+a {
+    color: #58a6ff;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Code blocks and inline code */
+pre, code {
+    background-color: #161b22 !important;
+    color: #e6edf3 !important;
+    font-family: "Fira Code", monospace;
+    font-size: 0.9em;
+    border-radius: 4px;
+    padding: 0.2em 0.4em;
+}
+
+/* Output areas */
+div.output {
+    background-color: #161b22;
+    color: #e6edf3;
+    border-radius: 4px;
+    padding: 0.5em;
+    margin: 0.5em 0;
+}
+
+/* Tables */
+table {
+    background-color: #0d1117;
+    color: #c9d1d9;
+    border-collapse: collapse;
+    margin: 1em 0;
+}
+
+table th, table td {
+    border: 1px solid #30363d;
+    padding: 0.3em 0.6em;
+}
+
+table th {
+    background-color: #161b22;
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+    color: #c9d1d9;
+}
+
+/* Horizontal rules */
+hr {
+    border-color: #30363d;
+}
+
+/* Markdown blockquotes */
+blockquote {
+    border-left: 3px solid #58a6ff;
+    padding-left: 0.5em;
+    color: #8b949e;
+    background-color: #0d1117;
+}
+
+/* Remove bright backgrounds in any divs */
+div.cell {
+    background-color: transparent;
+}
+
+/* Scrollbars (optional, for code cells) */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0d1117;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #30363d;
+    border-radius: 4px;
+}

@@ -33,11 +33,10 @@ jobs:
             --to html \
             --output-dir build \
             --output index.html
-            --template lab
 
       - name: Apply dark mode styling
         run: |
-          curl -L https://raw.githubusercontent.com/Sanmeet007/jupyter-dark-theme/main/dist/custom.css -o build/custom.css
+          cp colab/custom.css build/custom.css
           sed -i 's|</head>|<link rel="stylesheet" href="custom.css"></head>|' build/index.html
 
       - name: Deploy to GitHub Pages
