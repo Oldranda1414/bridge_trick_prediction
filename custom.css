@@ -101,3 +101,7 @@ div.cell {
     background-color: #30363d;
     border-radius: 4px;
 }
+
+img {
+  filter: invert(1);
+}
