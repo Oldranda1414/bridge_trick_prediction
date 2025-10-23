@@ -6,6 +6,14 @@ body {
     line-height: 1.5;
 }
 
+.jp-Cell {
+  background: black;
+}
+
+.jp-MarkdownOutput.jp-RenderedHTMLCommon {
+  color: white;
+}
+
 a {
     color: #58a6ff;
     text-decoration: none;
